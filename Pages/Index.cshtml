@@ -1,0 +1,154 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/dashboard.css" asp-append-version="true" />
+}
+
+<div class="dashboard-header">
+    <div>
+        <h1 class="dashboard-title">Lead Pipeline</h1>
+        <p class="dashboard-subtitle">Move leads through the sales process and track every activity.</p>
+    </div>
+    <div class="dashboard-actions">
+        <a class="btn btn-outline-secondary" asp-page="/Statuses/Index">Manage statuses</a>
+        <a class="btn btn-primary" asp-page="/Leads/Create">+ Add lead</a>
+    </div>
+</div>
+
+<div class="metrics-row" aria-label="Dashboard summary">
+    <div class="metric-pill">
+        <span class="metric-value">@Model.Dashboard.TotalLeads</span>
+        <span class="metric-label">Total leads</span>
+    </div>
+    <div class="metric-pill">
+        <span class="metric-value">@Model.Dashboard.VisibleLeads</span>
+        <span class="metric-label">Visible</span>
+    </div>
+    <div class="metric-pill">
+        <span class="metric-value">@Model.Dashboard.ActiveStatusCount</span>
+        <span class="metric-label">Pipeline stages</span>
+    </div>
+</div>
+
+<div class="board-toolbar">
+    <form method="get" class="search-form" role="search">
+        <label class="visually-hidden" asp-for="SearchTerm">Search leads</label>
+        <div class="search-input-wrapper">
+            <span class="search-icon" aria-hidden="true">⌕</span>
+            <input asp-for="SearchTerm"
+                   class="form-control search-input"
+                   placeholder="Search by name, company, email, or phone…"
+                   autocomplete="off" />
+        </div>
+        <button class="btn btn-dark" type="submit">Search</button>
+        @if (!string.IsNullOrWhiteSpace(Model.SearchTerm))
+        {
+            <a class="btn btn-outline-secondary" asp-page="/Index">Clear</a>
+        }
+    </form>
+</div>
+
+@if (Model.Dashboard.Statuses.Count == 0)
+{
+    <div class="empty-board">
+        <div class="empty-icon" aria-hidden="true">◎</div>
+        <h2>No active statuses</h2>
+        <p>Create the first pipeline stage before adding leads to the board.</p>
+        <a class="btn btn-primary" asp-page="/Statuses/Create">Create status</a>
+    </div>
+}
+else
+{
+    <div class="kanban-scroll-hint d-lg-none">Swipe horizontally to see all stages</div>
+    <section class="kanban-board" aria-label="Lead pipeline board">
+        @foreach (var column in Model.Dashboard.Statuses)
+        {
+            <article class="kanban-column" style="--status-color: @column.ColorCode;">
+                <header class="kanban-column-header">
+                    <div class="column-title">
+                        <span class="status-dot" aria-hidden="true"></span>
+                        <h2 class="column-name">@column.Name</h2>
+                    </div>
+                    <span class="lead-count">@column.Leads.Count</span>
+                </header>
+
+                <div class="kanban-column-body">
+                    @if (column.Leads.Count == 0)
+                    {
+                        <div class="column-empty">No leads</div>
+                    }
+                    else
+                    {
+                        @foreach (var lead in column.Leads)
+                        {
+                            <article class="lead-card">
+                                <button type="button"
+                                        class="lead-card-body"
+                                        data-lead-details-url="@Url.Page("/Index", "LeadDetails", new { leadId = lead.Id })"
+                                        aria-label="View details and activity for @lead.FullName">
+                                    <div class="lead-card-top">
+                                        <div class="lead-avatar" aria-hidden="true">
+                                            @lead.FullName.Substring(0, 1).ToUpperInvariant()
+                                        </div>
+                                        <div class="lead-meta">
+                                            <span class="lead-id">Lead #@lead.Id</span>
+                                            <span class="lead-company">@lead.Company</span>
+                                        </div>
+                                    </div>
+                                    <h3 class="lead-name">@lead.FullName</h3>
+                                    <div class="lead-email">@lead.Email</div>
+                                    <div class="lead-phone">@lead.Phone</div>
+                                </button>
+
+                                <div class="lead-card-actions">
+                                    <form method="post" asp-page-handler="Move" class="action-form">
+                                        <input type="hidden" name="leadId" value="@lead.Id" />
+                                        <input type="hidden" name="direction" value="Backward" />
+                                        <input type="hidden" name="q" value="@Model.SearchTerm" />
+                                        <button type="submit"
+                                                class="btn-move"
+                                                disabled="@(!lead.CanMoveBackward)"
+                                                title="@(lead.CanMoveBackward ? "Move to previous status" : "Already in the first status")">
+                                            <span aria-hidden="true">←</span>
+                                            Back
+                                        </button>
+                                    </form>
+                                    <form method="post" asp-page-handler="Move" class="action-form">
+                                        <input type="hidden" name="leadId" value="@lead.Id" />
+                                        <input type="hidden" name="direction" value="Forward" />
+                                        <input type="hidden" name="q" value="@Model.SearchTerm" />
+                                        <button type="submit"
+                                                class="btn-move forward"
+                                                disabled="@(!lead.CanMoveForward)"
+                                                title="@(lead.CanMoveForward ? "Move to next status" : "Already in the last status")">
+                                            Forward
+                                            <span aria-hidden="true">→</span>
+                                        </button>
+                                    </form>
+                                </div>
+                            </article>
+                        }
+                    }
+                </div>
+            </article>
+        }
+    </section>
+}
+
+<div class="offcanvas offcanvas-end lead-offcanvas" tabindex="-1" id="leadDetailsPanel"
+     aria-labelledby="leadDetailsPanelLabel">
+    <div class="offcanvas-header border-bottom">
+        <h2 class="offcanvas-title h5 mb-0" id="leadDetailsPanelLabel">Lead details</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body" id="leadDetailsContent">
+        <div class="details-loading" role="status">
+            <div class="spinner-border text-primary" aria-hidden="true"></div>
+            <span>Loading lead details…</span>
+        </div>
+    </div>
+</div>

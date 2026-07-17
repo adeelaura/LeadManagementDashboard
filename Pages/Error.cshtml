@@ -1,0 +1,16 @@
+@page
+@model ErrorModel
+@{
+    ViewData["Title"] = "Error";
+}
+
+<div class="content-card mx-auto error-card text-center">
+    <div class="error-code">500</div>
+    <h1 class="h3">Something went wrong</h1>
+    <p class="text-secondary">The request could not be completed. Please return to the dashboard and try again.</p>
+    @if (Model.ShowRequestId)
+    {
+        <p class="small text-secondary">Request ID: <code>@Model.RequestId</code></p>
+    }
+    <a class="btn btn-primary" asp-page="/Index">Return to dashboard</a>
+</div>

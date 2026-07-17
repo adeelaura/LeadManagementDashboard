@@ -1,0 +1,77 @@
+@model LeadDetailsViewModel
+
+<div class="lead-details-panel">
+    <div class="lead-details-header">
+        <div>
+            <div class="details-eyebrow">Lead profile</div>
+            <h2 class="details-name">@Model.FullName</h2>
+            <p class="details-company">@Model.Company</p>
+        </div>
+        <span class="status-pill"
+              style="background-color: @Model.StatusColorCode; color: @Model.StatusContrastTextColor;">
+            @Model.StatusName
+        </span>
+    </div>
+
+    <div class="detail-grid">
+        <div class="detail-item">
+            <span class="detail-label">Email</span>
+            <a href="mailto:@Model.Email">@Model.Email</a>
+        </div>
+        <div class="detail-item">
+            <span class="detail-label">Phone</span>
+            <a href="tel:@Model.Phone">@Model.Phone</a>
+        </div>
+        <div class="detail-item">
+            <span class="detail-label">Created</span>
+            <span>@Model.CreatedAt.UtcDateTime.ToString("dd MMM yyyy, HH:mm 'UTC'")</span>
+        </div>
+        <div class="detail-item">
+            <span class="detail-label">Lead ID</span>
+            <span>#@Model.Id</span>
+        </div>
+    </div>
+
+    <div class="activity-section-header">
+        <h3>Activity history</h3>
+        <span class="activity-count">@Model.ActivityHistory.Count event(s)</span>
+    </div>
+
+    @if (Model.ActivityHistory.Count == 0)
+    {
+        <div class="details-empty">
+            <strong>No activity yet</strong>
+            <span>Status changes will appear here.</span>
+        </div>
+    }
+    else
+    {
+        <ol class="activity-timeline">
+            @foreach (var activity in Model.ActivityHistory)
+            {
+                <li class="activity-item">
+                    <span class="activity-dot" aria-hidden="true"></span>
+                    <div class="activity-card">
+                        <div class="activity-flow">
+                            <span class="mini-status" style="border-color: @activity.FromStatusColorCode;">
+                                @activity.FromStatusName
+                            </span>
+                            <span class="activity-arrow" aria-hidden="true">→</span>
+                            <span class="mini-status" style="border-color: @activity.ToStatusColorCode;">
+                                @activity.ToStatusName
+                            </span>
+                        </div>
+                        <p class="activity-note">@activity.Note</p>
+                        <time class="activity-time" datetime="@activity.ChangedAt.ToString("O")">
+                            @activity.ChangedAt.UtcDateTime.ToString("dd MMM yyyy, HH:mm 'UTC'")
+                        </time>
+                    </div>
+                </li>
+            }
+        </ol>
+    }
+
+    <div class="details-edit">
+        <a class="btn btn-outline-primary" asp-page="/Leads/Edit" asp-route-id="@Model.Id">Edit lead</a>
+    </div>
+</div>

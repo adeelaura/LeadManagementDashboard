@@ -1,0 +1,63 @@
+@page
+@model LeadManagement.Web.Pages.Statuses.CreateModel
+@{
+    ViewData["Title"] = "Create status";
+}
+
+<div class="form-page">
+    <div class="page-heading mb-4">
+        <a class="back-link" asp-page="/Statuses/Index">← Back to statuses</a>
+        <div class="eyebrow mt-3 mb-2">Pipeline configuration</div>
+        <h1 class="display-title mb-2">Create status</h1>
+        <p class="text-secondary mb-0">Add a stage to the Kanban board and control its order and color.</p>
+    </div>
+
+    <div class="content-card form-card">
+        <form method="post" novalidate>
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+            <div class="row g-4">
+                <div class="col-md-7">
+                    <label asp-for="Status.Name" class="form-label"></label>
+                    <input asp-for="Status.Name" class="form-control" autocomplete="off" />
+                    <span asp-validation-for="Status.Name" class="text-danger small"></span>
+                </div>
+                <div class="col-md-5">
+                    <label asp-for="Status.DisplayOrder" class="form-label"></label>
+                    <input asp-for="Status.DisplayOrder" class="form-control" min="1" />
+                    <span asp-validation-for="Status.DisplayOrder" class="text-danger small"></span>
+                </div>
+                <div class="col-12">
+                    <label asp-for="Status.ColorCode" class="form-label"></label>
+                    <div class="color-field">
+                        <input type="color" class="form-control form-control-color" value="@Model.Status.ColorCode"
+                               data-color-picker aria-label="Choose status color" />
+                        <input asp-for="Status.ColorCode" class="form-control font-monospace" data-color-code />
+                    </div>
+                    <div class="form-text">Use a six-digit hex value, for example #0D6EFD.</div>
+                    <span asp-validation-for="Status.ColorCode" class="text-danger small"></span>
+                </div>
+                <div class="col-12">
+                    <div class="form-check form-switch">
+                        <input asp-for="Status.IsActive" class="form-check-input" />
+                        <label asp-for="Status.IsActive" class="form-check-label">Show this status on the dashboard</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="status-preview mt-4" data-status-preview style="--preview-color: @Model.Status.ColorCode;">
+                <span class="status-preview-dot"></span>
+                <span data-status-preview-name>New status preview</span>
+            </div>
+
+            <div class="form-actions">
+                <a class="btn btn-outline-secondary" asp-page="/Statuses/Index">Cancel</a>
+                <button type="submit" class="btn btn-primary">Create status</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

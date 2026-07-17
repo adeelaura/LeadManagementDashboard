@@ -1,0 +1,14 @@
+@page "{id:int}"
+@model LeadManagement.Web.Pages.Leads.DetailsModel
+@{
+    ViewData["Title"] = Model.Lead.FullName;
+}
+
+<div class="form-page">
+    <div class="page-heading mb-4">
+        <a class="back-link" asp-page="/Index">← Back to dashboard</a>
+    </div>
+    <div class="content-card details-page-card">
+        <partial name="_LeadDetails" model="Model.Lead" />
+    </div>
+</div>

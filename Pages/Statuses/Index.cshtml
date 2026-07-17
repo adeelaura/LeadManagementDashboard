@@ -1,0 +1,90 @@
+@page
+@model LeadManagement.Web.Pages.Statuses.IndexModel
+@{
+    ViewData["Title"] = "Manage statuses";
+}
+
+<section class="page-heading d-flex flex-column flex-lg-row align-items-lg-end justify-content-between gap-3 mb-4">
+    <div>
+        <a class="back-link" asp-page="/Index">← Back to dashboard</a>
+        <div class="eyebrow mt-3 mb-2">Pipeline configuration</div>
+        <h1 class="display-title mb-2">Manage statuses</h1>
+        <p class="text-secondary mb-0">Statuses are displayed in ascending order. Inactive statuses are hidden from the dashboard.</p>
+    </div>
+    <a class="btn btn-primary" asp-page="/Statuses/Create">+ Create status</a>
+</section>
+
+<div class="content-card overflow-hidden p-0">
+    @if (Model.Statuses.Count == 0)
+    {
+        <div class="empty-state large">
+            <div class="empty-icon" aria-hidden="true">◎</div>
+            <h2 class="h4">No statuses configured</h2>
+            <p>Create the first pipeline stage to begin managing leads.</p>
+            <a class="btn btn-primary" asp-page="/Statuses/Create">Create status</a>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table align-middle status-table mb-0">
+                <thead>
+                    <tr>
+                        <th scope="col">Status</th>
+                        <th scope="col">Order</th>
+                        <th scope="col">Leads</th>
+                        <th scope="col">State</th>
+                        <th scope="col" class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var status in Model.Statuses)
+                    {
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center gap-3">
+                                    <span class="status-swatch" style="background-color: @status.ColorCode;" aria-hidden="true"></span>
+                                    <div>
+                                        <strong class="d-block">@status.Name</strong>
+                                        <span class="small text-secondary">@status.ColorCode</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="order-badge">@status.DisplayOrder</span></td>
+                            <td>@status.LeadCount</td>
+                            <td>
+                                @if (status.IsActive)
+                                {
+                                    <span class="badge rounded-pill text-bg-success-subtle text-success-emphasis">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge rounded-pill text-bg-secondary-subtle text-secondary-emphasis">Inactive</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="d-flex justify-content-end flex-wrap gap-2">
+                                    <a class="btn btn-sm btn-outline-secondary"
+                                       asp-page="/Statuses/Edit"
+                                       asp-route-id="@status.Id">Edit</a>
+                                    <form method="post" asp-page-handler="Toggle" class="d-inline"
+                                          data-confirm="@(status.IsActive ? "Deactivate this status? It will be hidden from the dashboard." : "Activate this status?")">
+                                        <input type="hidden" name="id" value="@status.Id" />
+                                        <input type="hidden" name="isActive" value="@(!status.IsActive)" />
+                                        <button type="submit" class="btn btn-sm @(status.IsActive ? "btn-outline-danger" : "btn-outline-success")">
+                                            @(status.IsActive ? "Deactivate" : "Activate")
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<div class="alert alert-light border mt-4 mb-0" role="note">
+    <strong>Safety rule:</strong> a status cannot be deactivated while it contains leads, and at least one status must remain active.
+</div>
